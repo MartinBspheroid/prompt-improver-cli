@@ -111,16 +111,8 @@ async function runClaudeImprovement(prompt: string): Promise<string> {
   const improvementPrompt = createImprovementPrompt(prompt);
   
   try {
-    // Write prompt to temporary file
-    const tempFile = `/tmp/prompt-improver-${Date.now()}.txt`;
-    await Bun.write(tempFile, improvementPrompt);
-    
-    // Run claude with the prompt file using Bun shell
-    const result = await $`claude -p ${tempFile}`.text();
-    
-    // Clean up temporary file
-    await $`rm ${tempFile}`;
-    
+    // Run claude with the prompt directly as input
+    const result = await $`claude -p ${improvementPrompt}`.text();
     return result;
   } catch (error) {
     if (error instanceof Error) {
