@@ -99,22 +99,9 @@ Analyze the original prompt above and create an improved version following curre
 6. Add output format specifications
 
 ## Output Format
-Please structure your response as follows:
+IMPORTANT: Your response should consist ONLY of the improved prompt. Do not include any analysis, explanations, usage notes, or commentary. Just provide the final enhanced prompt using clear markdown structure.
 
-# Prompt Analysis
-**Issues Found:**
-- [List specific issues with the original prompt]
-
-**Improvements Made:**
-- [List the enhancements you applied]
-
-# Improved Prompt
-[The enhanced prompt following best practices, using clear markdown structure]
-
-# Usage Notes
-[Any additional context about how to use the improved prompt effectively]
-
-Focus on clarity, specificity, and actionable instructions. Use markdown headers, bullet points, and numbered lists instead of XML tags for better readability.`;
+Focus on clarity, specificity, and actionable instructions. Use markdown headers, bullet points, and numbered lists for better readability.`;
 }
 
 /**
