@@ -1,0 +1,44 @@
+{
+  "name": "prompt-improver-cli",
+  "version": "1.0.0",
+  "description": "A fast CLI tool for enhancing prompts using Claude CLI and prompt engineering best practices",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "prompt-improver": "./src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build --compile --outfile dist/prompt-improver ./src/cli.ts",
+    "install-global": "bun build --compile --outfile /usr/local/bin/prompt-improver ./src/cli.ts",
+    "test": "bun test",
+    "lint": "bun run --bun tsc --noEmit"
+  },
+  "keywords": [
+    "cli",
+    "prompt",
+    "ai",
+    "claude",
+    "prompt-engineering",
+    "bun",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/prompt-improver-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/prompt-improver-cli/issues"
+  },
+  "homepage": "https://github.com/yourusername/prompt-improver-cli#readme"
+}
