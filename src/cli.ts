@@ -53,9 +53,9 @@ function analyzePrompt(prompt: string): PromptAnalysis {
   }
   
   // Check for structure
-  if (!["<", "###", "1.", "2.", "-"].some(marker => prompt.includes(marker))) {
+  if (!["###", "##", "#", "1.", "2.", "-", "*"].some(marker => prompt.includes(marker))) {
     issues.push("Lacks clear structure");
-    suggestions.push("Add structure using XML tags or numbered steps");
+    suggestions.push("Add structure using markdown headers or numbered steps");
   }
   
   // Check for context
@@ -76,55 +76,45 @@ function analyzePrompt(prompt: string): PromptAnalysis {
  * Create a meta-prompt to improve the original prompt using best practices
  */
 function createImprovementPrompt(originalPrompt: string): string {
-  return `<role>You are an expert prompt engineer specializing in creating high-quality prompts for AI models</role>
+  return `You are an expert prompt engineer specializing in creating high-quality prompts for AI models.
 
-<context>
-<original_prompt>
+## Original Prompt
 ${originalPrompt}
-</original_prompt>
 
-<date>2025-01-28</date>
-<model>claude-4</model>
-</context>
-
-<task>
+## Your Task
 Analyze the original prompt above and create an improved version following current best practices for Claude 4. Apply the Five Pillars of Exceptional Prompting:
 
-1. Surgical Specificity - Make every instruction precise
-2. Context as Architecture - Provide comprehensive background
-3. Structure as Clarity - Use XML tags for organization
-4. Leading by Example - Include examples where helpful
-5. Optimization for iteration - Design for refinement
+1. **Surgical Specificity** - Make every instruction precise
+2. **Context as Architecture** - Provide comprehensive background
+3. **Structure as Clarity** - Use clear markdown formatting and organization
+4. **Leading by Example** - Include examples where helpful
+5. **Optimization for iteration** - Design for refinement
 
-</task>
+## Instructions
+1. Identify specific weaknesses in the original prompt
+2. Enhance specificity by adding modifiers (scope, depth, completeness)
+3. Add relevant context, constraints, and background information
+4. Structure using clear markdown formatting and sections
+5. Include examples if they would improve clarity
+6. Add output format specifications
 
-<instructions>
-<step1>Identify specific weaknesses in the original prompt</step1>
-<step2>Enhance specificity by adding modifiers (scope, depth, completeness)</step2>
-<step3>Add relevant context, constraints, and background information</step3>
-<step4>Structure using XML tags for clear organization</step4>
-<step5>Include examples if they would improve clarity</step5>
-<step6>Add output format specifications</step6>
-</instructions>
+## Output Format
+Please structure your response as follows:
 
-<output_format>
 # Prompt Analysis
 **Issues Found:**
-- [List specific issues]
+- [List specific issues with the original prompt]
 
 **Improvements Made:**
-- [List enhancements]
+- [List the enhancements you applied]
 
 # Improved Prompt
-[The enhanced prompt following best practices]
+[The enhanced prompt following best practices, using clear markdown structure]
 
 # Usage Notes
 [Any additional context about how to use the improved prompt effectively]
-</output_format>
 
-<thinking_instruction>
-Consider the specific task the user is trying to accomplish and optimize the prompt structure accordingly. Focus on clarity, specificity, and actionable instructions.
-</thinking_instruction>`;
+Focus on clarity, specificity, and actionable instructions. Use markdown headers, bullet points, and numbered lists instead of XML tags for better readability.`;
 }
 
 /**
