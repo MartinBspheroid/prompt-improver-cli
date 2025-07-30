@@ -6,6 +6,7 @@
 
 import inquirer from 'inquirer';
 import { $ } from "bun";
+import boxen from 'boxen';
 
 /**
  * Extract JSON from Claude's markdown code block response
@@ -62,19 +63,20 @@ interface InteractiveSession {
  * Main Claude CLI-driven interactive improvement flow
  */
 export async function runClaudeInteractiveImprovement(): Promise<string> {
-  // Enhanced header with beautiful borders
-  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('║' + '  🚀 Claude CLI-Driven Interactive Prompt Improvement'.padEnd(78) + '║');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('╠' + '═'.repeat(78) + '╣');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('║  This tool uses Claude to dynamically analyze your prompt and'.padEnd(78) + '║');
-  console.log('║  generate targeted questions. Each question is specifically'.padEnd(78) + '║');
-  console.log('║  crafted based on your prompt\'s unique weaknesses.'.padEnd(78) + '║');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('╚' + '═'.repeat(78) + '╝');
-  console.log();
+  // Enhanced header with boxen
+  const headerContent = `🚀 Claude CLI-Driven Interactive Prompt Improvement
+
+This tool uses Claude to dynamically analyze your prompt and
+generate targeted questions. Each question is specifically
+crafted based on your prompt's unique weaknesses.`;
+  
+  console.log(boxen(headerContent, {
+    padding: 1,
+    margin: 0,
+    borderStyle: 'double',
+    borderColor: 'cyan',
+    textAlignment: 'left'
+  }));
 
   try {
     // Get initial prompt from user
@@ -96,52 +98,43 @@ export async function runClaudeInteractiveImprovement(): Promise<string> {
     ]);
 
     // Phase 1: Claude analyzes prompt and generates targeted questions
-    console.log('\n🔍 Claude is analyzing your prompt for weaknesses...\n');
+    console.log('🔍 Claude is analyzing your prompt for weaknesses...');
     const analysisResponse = await runClaudeAnalysis(originalPrompt);
     
-    // Display analysis summary with borders
-    console.log('\n' + '┌' + '─'.repeat(58) + '┐');
-    console.log('│' + ' 📊 ANALYSIS SUMMARY'.padEnd(58) + '│');
-    console.log('├' + '─'.repeat(58) + '┤');
-    console.log('│' + ' '.repeat(58) + '│');
-    
-    // Split summary into lines for proper formatting
-    const summaryLines = analysisResponse.summary.split('\n');
-    for (const line of summaryLines) {
-      console.log('│ ' + line.padEnd(57) + '│');
-    }
-    
-    console.log('│' + ' '.repeat(58) + '│');
-    console.log('└' + '─'.repeat(58) + '┘');
-    console.log();
+    // Display analysis summary with boxen
+    console.log(boxen(analysisResponse.summary, {
+      title: '📊 ANALYSIS SUMMARY',
+      titleAlignment: 'left',
+      padding: 1,
+      margin: 0,
+      borderStyle: 'round',
+      borderColor: 'yellow'
+    }));
 
     // Ask Claude's generated questions (Phase 1)
-    console.log('\n' + '╔' + '═'.repeat(68) + '╗');
-    console.log('║' + ' '.repeat(68) + '║');
-    console.log('║' + ' 📋 PHASE 1: Addressing Core Weaknesses (Claude-Generated)'.padEnd(68) + '║');
-    console.log('║' + ' '.repeat(68) + '║');
-    console.log('╚' + '═'.repeat(68) + '╝');
+    console.log(boxen('📋 PHASE 1: Addressing Core Weaknesses (Claude-Generated)', {
+      padding: 1,
+      margin: 0,
+      borderStyle: 'double',
+      borderColor: 'green',
+      textAlignment: 'center'
+    }));
     
     const phase1Answers = await askClaudeGeneratedQuestions(analysisResponse.questions);
 
     // Phase 2: Claude generates enhancement questions based on responses
-    console.log('\n\n🔧 Claude is analyzing your responses and generating enhancement questions...\n');
+    console.log('🔧 Claude is analyzing your responses and generating enhancement questions...');
     const enhancementResponse = await runClaudeEnhancement(originalPrompt, analysisResponse, phase1Answers);
 
-    // Show preliminary improved prompt with borders
-    console.log('\n' + '┌' + '─'.repeat(58) + '┐');
-    console.log('│' + ' 📝 PRELIMINARY IMPROVED PROMPT'.padEnd(58) + '│');
-    console.log('├' + '─'.repeat(58) + '┤');
-    console.log('│' + ' '.repeat(58) + '│');
-    
-    // Split preliminary prompt into lines and add borders
-    const prelimLines = enhancementResponse.preliminary_prompt.split('\n');
-    for (const line of prelimLines) {
-      console.log('│ ' + line.padEnd(57) + '│');
-    }
-    
-    console.log('│' + ' '.repeat(58) + '│');
-    console.log('└' + '─'.repeat(58) + '┘');
+    // Show preliminary improved prompt with boxen
+    console.log(boxen(enhancementResponse.preliminary_prompt, {
+      title: '📝 PRELIMINARY IMPROVED PROMPT',
+      titleAlignment: 'left',
+      padding: 1,
+      margin: 0,
+      borderStyle: 'single',
+      borderColor: 'blue'
+    }));
     
     const { continueToPhase2 } = await inquirer.prompt([
       {
@@ -157,16 +150,18 @@ export async function runClaudeInteractiveImprovement(): Promise<string> {
 
     if (continueToPhase2) {
       // Ask Claude's enhancement questions (Phase 2)
-      console.log('\n' + '╔' + '═'.repeat(68) + '╗');
-      console.log('║' + ' '.repeat(68) + '║');
-      console.log('║' + ' 🎯 PHASE 2: Enhancement & Refinement (Claude-Generated)'.padEnd(68) + '║');
-      console.log('║' + ' '.repeat(68) + '║');
-      console.log('╚' + '═'.repeat(68) + '╝');
+      console.log(boxen('🎯 PHASE 2: Enhancement & Refinement (Claude-Generated)', {
+        padding: 1,
+        margin: 0,
+        borderStyle: 'double',
+        borderColor: 'magenta',
+        textAlignment: 'center'
+      }));
       
       phase2Answers = await askClaudeGeneratedQuestions(enhancementResponse.questions);
 
       // Phase 3: Final synthesis
-      console.log('\n\n✨ Claude is synthesizing all information into the final optimized prompt...\n');
+      console.log('✨ Claude is synthesizing all information into the final optimized prompt...');
       finalPrompt = await runClaudeSynthesis(originalPrompt, analysisResponse, phase1Answers, enhancementResponse, phase2Answers);
     }
 
@@ -185,6 +180,12 @@ export async function runClaudeInteractiveImprovement(): Promise<string> {
     return finalPrompt;
 
   } catch (error) {
+    // Handle graceful exit when user presses Ctrl+C
+    if (error instanceof Error && error.message.includes('User force closed the prompt')) {
+      console.log('\n🛑 Interactive session cancelled by user.');
+      process.exit(0);
+    }
+    
     console.error('\n❌ Error during Claude CLI interactive improvement:', error);
     console.log('Please ensure Claude CLI is installed and accessible.');
     throw error;
@@ -255,7 +256,7 @@ Focus on questions that will gather the most valuable information for improving 
     return JSON.parse(jsonContent) as ClaudeAnalysisResponse;
   } catch (error) {
     console.error('Error calling Claude CLI for analysis:', error);
-    console.log('📝 Note: Using fallback questions while Claude CLI issues are resolved...\n');
+    console.log('📝 Note: Using fallback questions while Claude CLI issues are resolved...');
     // Fallback response
     return {
       questions: [
@@ -361,7 +362,7 @@ Make the preliminary_prompt a significant improvement over the original, incorpo
     return JSON.parse(jsonContent) as ClaudeEnhancementResponse;
   } catch (error) {
     console.error('Error calling Claude CLI for enhancement:', error);
-    console.log('📝 Note: Using fallback questions while Claude CLI issues are resolved...\n');
+    console.log('📝 Note: Using fallback questions while Claude CLI issues are resolved...');
     // Fallback response
     return {
       questions: [
@@ -469,20 +470,20 @@ async function askClaudeGeneratedQuestions(questions: Array<{ id: string; questi
     const q = questions[i];
     if (!q) continue;
     
-    // Create bordered question box
-    console.log('\n');
-    console.log('┌' + '─'.repeat(76) + '┐');
-    console.log('│' + ` 💡 Question ${i + 1}/3`.padEnd(76) + '│');
-    console.log('├' + '─'.repeat(76) + '┤');
-    console.log('│' + ' '.repeat(76) + '│');
-    console.log('│ ' + `📋 ${q.question}`.padEnd(75) + '│');
+    // Create boxen question box
+    let questionContent = `📋 ${q.question}`;
     if (q.reasoning) {
-      console.log('│' + ' '.repeat(76) + '│');
-      console.log('│ ' + `🎯 Why this matters: ${q.reasoning}`.padEnd(75) + '│');
+      questionContent += `\n\n🎯 Why this matters: ${q.reasoning}`;
     }
-    console.log('│' + ' '.repeat(76) + '│');
-    console.log('└' + '─'.repeat(76) + '┘');
-    console.log();
+    
+    console.log(boxen(questionContent, {
+      title: `💡 Question ${i + 1}/3`,
+      titleAlignment: 'left',
+      padding: 1,
+      margin: 0,
+      borderStyle: 'round',
+      borderColor: 'cyan'
+    }));
     
     const { answer } = await inquirer.prompt([
       {
@@ -510,36 +511,30 @@ async function askClaudeGeneratedQuestions(questions: Array<{ id: string; questi
  * Display final results and handle user actions
  */
 async function displayFinalResults(session: InteractiveSession): Promise<void> {
-  // Enhanced completion header
-  console.log('\n' + '╔' + '═'.repeat(58) + '╗');
-  console.log('║' + ' '.repeat(58) + '║');
-  console.log('║' + ' ✅ Claude CLI Interactive Improvement Completed!'.padEnd(58) + '║');
-  console.log('║' + ' '.repeat(58) + '║');
-  console.log('╚' + '═'.repeat(58) + '╝');
-  console.log();
+  // Enhanced completion header with boxen
+  console.log(boxen('✅ Claude CLI Interactive Improvement Completed!', {
+    padding: 1,
+    margin: 0,
+    borderStyle: 'double',
+    borderColor: 'green',
+    textAlignment: 'center'
+  }));
   
   console.log('📊 IMPROVEMENT SUMMARY:');
   console.log(`   Original length: ${session.originalPrompt.length} characters`);
   console.log(`   Final length: ${session.finalPrompt.length} characters`);
   console.log(`   Enhancement ratio: ${Math.round((session.finalPrompt.length / session.originalPrompt.length) * 100)}%`);
-  console.log(`   Questions answered: ${Object.keys(session.phase1Answers).length + Object.keys(session.phase2Answers).length}\n`);
+  console.log(`   Questions answered: ${Object.keys(session.phase1Answers).length + Object.keys(session.phase2Answers).length}`);
 
-  // Display the final prompt with enhanced borders
-  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('║' + ' 🎯 FINAL OPTIMIZED PROMPT'.padEnd(78) + '║');
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('╠' + '═'.repeat(78) + '╣');
-  console.log('║' + ' '.repeat(78) + '║');
-  
-  // Split prompt into lines and add borders
-  const promptLines = session.finalPrompt.split('\n');
-  for (const line of promptLines) {
-    console.log('║ ' + line.padEnd(77) + '║');
-  }
-  
-  console.log('║' + ' '.repeat(78) + '║');
-  console.log('╚' + '═'.repeat(78) + '╝');
+  // Display the final prompt with boxen
+  console.log(boxen(session.finalPrompt, {
+    title: '🎯 FINAL OPTIMIZED PROMPT',
+    titleAlignment: 'left',
+    padding: 1,
+    margin: 0,
+    borderStyle: 'double',
+    borderColor: 'green'
+  }));
 
   // Handle user actions
   const { action } = await inquirer.prompt([
@@ -560,14 +555,14 @@ async function displayFinalResults(session: InteractiveSession): Promise<void> {
     }
   }
 
-  console.log('\n🎉 Claude CLI interactive improvement session completed successfully!');
+  console.log('🎉 Claude CLI interactive improvement session completed successfully!');
 }
 
 /**
  * Utility functions
  */
 function generateSessionId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
 async function copyToClipboard(text: string): Promise<boolean> {

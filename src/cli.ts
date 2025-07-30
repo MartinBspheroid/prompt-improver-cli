@@ -625,17 +625,17 @@ async function runClaudeImprovement(prompt: string, analysis: PromptAnalysis): P
  */
 async function improvePrompt(promptText: string): Promise<void> {
   try {
-    console.log("🚀 Analyzing and improving your prompt with 2024 research-based techniques...\n");
+    console.log("🚀 Analyzing and improving your prompt with 2024 research-based techniques...");
     
     // Enhanced analysis
     const analysis = analyzePrompt(promptText);
     
     // Display comprehensive analysis
     console.log("📊 Comprehensive Prompt Analysis");
-    console.log("================================\n");
+    console.log("================================");
     
     console.log(`🎯 Task Type: ${analysis.taskType}`);
-    console.log(`📈 Overall Quality Score: ${analysis.qualityScores.overall}/10 (${analysis.improvementPriority} priority)\n`);
+    console.log(`📈 Overall Quality Score: ${analysis.qualityScores.overall}/10 (${analysis.improvementPriority} priority)`);
     
     // Quality metrics breakdown
     console.log("📋 Quality Metrics:");
@@ -644,7 +644,7 @@ async function improvePrompt(promptText: string): Promise<void> {
     console.log(`  • Thoroughness: ${analysis.qualityScores.thoroughness}/10 (Context & completeness)`);
     console.log(`  • Conciseness: ${analysis.qualityScores.conciseness}/10 (Efficiency)`);
     console.log(`  • Transparency: ${analysis.qualityScores.transparency}/10 (Intent clarity)`);
-    console.log(`  • Safety: ${analysis.qualityScores.safety}/10 | Privacy: ${analysis.qualityScores.privacy}/10 | Fairness: ${analysis.qualityScores.fairness}/10\n`);
+    console.log(`  • Safety: ${analysis.qualityScores.safety}/10 | Privacy: ${analysis.qualityScores.privacy}/10 | Fairness: ${analysis.qualityScores.fairness}/10`);
     
     // Detected patterns
     if (analysis.detectedPatterns.length > 0) {
@@ -652,7 +652,6 @@ async function improvePrompt(promptText: string): Promise<void> {
       analysis.detectedPatterns.forEach(pattern => {
         console.log(`  ✓ ${pattern.name} (${Math.round(pattern.confidence * 100)}% confidence) - ${pattern.description}`);
       });
-      console.log();
     }
     
     // Recommended frameworks
@@ -662,7 +661,6 @@ async function improvePrompt(promptText: string): Promise<void> {
       console.log(`  ${icon} ${framework.name} (${framework.acronym}) - ${framework.suitability}/10`);
       console.log(`     ${framework.reason}`);
     });
-    console.log();
     
     // Issues and suggestions
     if (analysis.issues.length > 0) {
@@ -670,7 +668,6 @@ async function improvePrompt(promptText: string): Promise<void> {
       analysis.issues.forEach(issue => {
         console.log(`  • ${issue}`);
       });
-      console.log();
     }
     
     if (analysis.suggestions.length > 0) {
@@ -678,11 +675,10 @@ async function improvePrompt(promptText: string): Promise<void> {
       analysis.suggestions.forEach(suggestion => {
         console.log(`  • ${suggestion}`);
       });
-      console.log();
     }
     
     // Run Claude improvement
-    console.log("🧠 Running Claude CLI with optimized improvement prompt...\n");
+    console.log("🧠 Running Claude CLI with optimized improvement prompt...");
     const improvedResult = await runClaudeImprovement(promptText, analysis);
     
     console.log(improvedResult);
@@ -690,9 +686,9 @@ async function improvePrompt(promptText: string): Promise<void> {
     // Try to copy to clipboard
     const clipboardSuccess = await copyToClipboard(improvedResult);
     if (clipboardSuccess) {
-      console.log("\n✅ Result copied to clipboard!");
+      console.log("✅ Result copied to clipboard!");
     } else {
-      console.log("\n⚠️  Could not copy to clipboard");
+      console.log("⚠️  Could not copy to clipboard");
     }
 
   } catch (error) {
@@ -712,55 +708,11 @@ async function main(): Promise<void> {
     .description('Advanced Prompt Improver CLI - 2024 Research Edition')
     .version('2.0.0');
 
-  // Interactive command
+  // Analysis command (non-interactive mode)
   program
-    .command('interactive')
-    .alias('i')
-    .description('Launch Claude CLI-driven interactive improvement mode')
-    .action(async () => {
-      try {
-        const improvedPrompt = await runClaudeInteractiveImprovement();
-        // Additional clipboard copy as backup
-        const clipboardSuccess = await copyToClipboard(improvedPrompt);
-        if (clipboardSuccess) {
-          console.log("\n✅ Final prompt also copied to clipboard!");
-        }
-        process.exit(0);
-      } catch (error) {
-        console.error("Interactive mode failed:", error instanceof Error ? error.message : "Unknown error");
-        process.exit(1);
-      }
-    });
-
-  // File input command
-  program
-    .command('file')
-    .alias('f')
-    .description('Improve prompt from file')
-    .argument('<filepath>', 'Path to file containing the prompt')
-    .action(async (filepath: string) => {
-      try {
-        const file = Bun.file(filepath);
-        if (!(await file.exists())) {
-          console.error(`Error: File '${filepath}' not found`);
-          process.exit(1);
-        }
-        
-        const prompt = await file.text();
-        if (!prompt.trim()) {
-          console.error("Error: File is empty");
-          process.exit(1);
-        }
-        
-        await improvePrompt(prompt.trim());
-      } catch (error) {
-        console.error("Error reading file:", error instanceof Error ? error.message : "Unknown error");
-        process.exit(1);
-      }
-    });
-
-  // Default command for direct prompt input
-  program
+    .command('analyze')
+    .alias('a')
+    .description('Run standard prompt analysis and improvement (non-interactive)')
     .argument('[prompt]', 'Prompt text to improve')
     .action(async (promptText?: string) => {
       let prompt = "";
@@ -793,6 +745,88 @@ async function main(): Promise<void> {
       await improvePrompt(prompt);
     });
 
+  // File input command
+  program
+    .command('file')
+    .alias('f')
+    .description('Improve prompt from file')
+    .argument('<filepath>', 'Path to file containing the prompt')
+    .option('--interactive', 'Use interactive mode for file input')
+    .action(async (filepath: string, options: { interactive?: boolean }) => {
+      try {
+        const file = Bun.file(filepath);
+        if (!(await file.exists())) {
+          console.error(`Error: File '${filepath}' not found`);
+          process.exit(1);
+        }
+        
+        const prompt = await file.text();
+        if (!prompt.trim()) {
+          console.error("Error: File is empty");
+          process.exit(1);
+        }
+        
+        if (options.interactive) {
+          // Use interactive mode but pre-populate with file content
+          console.log(`📁 Loaded prompt from file: ${filepath}`);
+          const improvedPrompt = await runClaudeInteractiveImprovement();
+          const clipboardSuccess = await copyToClipboard(improvedPrompt);
+          if (clipboardSuccess) {
+            console.log("✅ Final prompt also copied to clipboard!");
+          }
+        } else {
+          await improvePrompt(prompt.trim());
+        }
+      } catch (error) {
+        console.error("Error reading file:", error instanceof Error ? error.message : "Unknown error");
+        process.exit(1);
+      }
+    });
+
+  // Default command - Interactive mode
+  program
+    .argument('[prompt]', 'Optional: Start interactive mode with this prompt pre-filled')
+    .action(async (promptText?: string) => {
+      // If a prompt is provided as argument, run analysis mode
+      if (promptText) {
+        await improvePrompt(promptText);
+        return;
+      }
+      
+      // Check if there's piped input (stdin) without blocking
+      let hasStdinInput = false;
+      if (!process.stdin.isTTY) {
+        // There's piped input available
+        try {
+          const stdin = await Bun.stdin.text();
+          if (stdin.trim()) {
+            await improvePrompt(stdin.trim());
+            return;
+          }
+        } catch (error) {
+          // Continue to interactive mode if stdin read fails
+        }
+      }
+      
+      // Default to interactive mode
+      try {
+        const improvedPrompt = await runClaudeInteractiveImprovement();
+        // Additional clipboard copy as backup
+        const clipboardSuccess = await copyToClipboard(improvedPrompt);
+        if (clipboardSuccess) {
+          console.log("✅ Final prompt also copied to clipboard!");
+        }
+        process.exit(0);
+      } catch (error) {
+        // Handle graceful exit - don't show error for user cancellation
+        if (error instanceof Error && error.message.includes('User force closed the prompt')) {
+          process.exit(0);
+        }
+        console.error("Interactive mode failed:", error instanceof Error ? error.message : "Unknown error");
+        process.exit(1);
+      }
+    });
+
   // Enhanced help with feature descriptions
   program.addHelpText('after', `
 🧠 Advanced Analysis Features (2024 Research-Based):
@@ -805,17 +839,18 @@ async function main(): Promise<void> {
 
 🚀 Core Features:
   ✨ Lightning-fast TypeScript execution with Bun
-  🎯 Claude CLI-driven interactive mode (dynamic question generation)
+  🎯 Interactive mode by default (dynamic question generation)
   📋 Automatic clipboard integration
   🛠️ Shell integration for Claude CLI
   📈 Comprehensive quality scoring and analytics
   🎨 Rich console output with visual indicators
 
 Examples:
-  prompt-improver "write a function"
+  prompt-improver                    # Interactive mode (default)
+  prompt-improver "write a function" # Quick analysis mode
   echo "improve this code" | prompt-improver
   prompt-improver file my-prompt.txt
-  prompt-improver interactive
+  prompt-improver analyze "my prompt" # Force analysis mode
 `);
 
   await program.parseAsync();
