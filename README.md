@@ -1,17 +1,18 @@
 # Prompt Improver CLI
 
-A blazingly fast CLI tool for enhancing prompts using Claude CLI and prompt engineering best practices. Built with Bun and TypeScript for superior performance and developer experience.
+A fast CLI tool for enhancing prompts using Claude CLI and advanced prompt engineering techniques. Built with Bun and TypeScript for superior performance and developer experience.
 
-## 🚀 Features
+## Features
 
-- **⚡ Lightning Fast**: Built with Bun for 28x faster startup than npm/node
-- **🧠 Smart Analysis**: Automatically detects common prompt issues
-- **📋 Clipboard Integration**: Results copied to clipboard automatically
-- **🛠️ Shell Integration**: Seamless Claude CLI integration with Bun's shell
-- **📝 TypeScript**: Full type safety and modern language features
-- **🌍 Cross-Platform**: Works on macOS, Linux, and Windows
+- **Interactive Mode by Default**: Dynamic question generation powered by Claude CLI
+- **Advanced Analysis**: 9-metric quality assessment with task type detection
+- **Pattern Recognition**: Identifies Chain-of-Thought, Few-Shot Learning, and other techniques
+- **Framework Recommendations**: Suggests optimal frameworks (5C, RACE, CoT, Tree-of-Thoughts)
+- **Lightning Fast**: Built with Bun for 28x faster startup than Node.js
+- **Automatic Clipboard Integration**: Results copied to clipboard automatically
+- **Cross-Platform**: Works on macOS, Linux, and Windows
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -23,6 +24,7 @@ A blazingly fast CLI tool for enhancing prompts using Claude CLI and prompt engi
 ```bash
 git clone https://github.com/yourusername/prompt-improver-cli.git
 cd prompt-improver-cli
+bun install
 chmod +x src/cli.ts
 ```
 
@@ -40,9 +42,21 @@ bun run install-global
 # Installs to /usr/local/bin/prompt-improver
 ```
 
-## 🎯 Usage
+## Usage
 
-### Basic Usage
+### Interactive Mode (Default)
+
+```bash
+# Launch interactive mode
+./src/cli.ts
+
+# Interactive mode guides you through:
+# 1. Prompt analysis with targeted questions
+# 2. Enhancement suggestions based on your responses
+# 3. Final optimized prompt generation
+```
+
+### Quick Analysis Mode
 
 ```bash
 # Direct prompt argument
@@ -51,73 +65,63 @@ bun run install-global
 # Read from stdin pipe
 echo "improve this code" | ./src/cli.ts
 
-# Read from file
-./src/cli.ts -f my-prompt.txt
-
-# Show help
-./src/cli.ts --help
+# Force analysis mode
+./src/cli.ts analyze "my prompt text"
 ```
 
-### Advanced Examples
+### File Input
 
 ```bash
-# Complex prompt improvement
-./src/cli.ts "make a dashboard with lots of features"
+# Standard file analysis
+./src/cli.ts file my-prompt.txt
 
-# File-based workflow
-echo "Create a REST API for user management" > prompt.txt
-./src/cli.ts -f prompt.txt
-
-# Pipeline integration
-curl -s https://api.example.com/prompt | ./src/cli.ts
+# Interactive mode with file input
+./src/cli.ts file my-prompt.txt --interactive
 ```
 
-## 🧠 How It Works
+## How It Works
 
-The tool applies the **Five Pillars of Exceptional Prompting**:
+The tool uses a two-phase interactive approach powered by Claude CLI:
 
-1. **Surgical Specificity** - Eliminates vague language and adds precise requirements
-2. **Context as Architecture** - Provides comprehensive background information
-3. **Structure as Clarity** - Organizes prompts using XML tags and clear sections
-4. **Leading by Example** - Includes relevant examples where helpful
-5. **Optimization for Iteration** - Designs prompts for refinement and improvement
+### Phase 1: Core Weakness Analysis
+Claude analyzes your prompt and generates targeted questions addressing:
+- **Ambiguity**: Vague language and unclear instructions
+- **Missing Context**: Lack of background information or constraints
+- **Unclear Objectives**: Undefined goals and success criteria
+
+### Phase 2: Enhancement & Refinement
+Based on your responses, Claude generates follow-up questions about:
+- **Examples**: Ideal output demonstrations
+- **Edge Cases**: Unusual situations to handle
+- **Success Criteria**: Measurable quality indicators
 
 ### Analysis Features
 
-- **Vagueness Detection**: Identifies and flags unclear language
-- **Structure Analysis**: Checks for proper organization and formatting
-- **Context Assessment**: Evaluates whether sufficient background is provided
-- **Example Suggestions**: Recommends when examples would improve clarity
+- **9-Metric Quality Assessment**: Accuracy, clarity, thoroughness, conciseness, transparency, safety, privacy, fairness, and overall score
+- **Task Type Detection**: Automatically identifies reasoning, creative, code, analysis, factual, or conversation tasks
+- **Pattern Recognition**: Detects existing prompt engineering techniques
+- **Framework Recommendations**: Suggests optimal structures based on your specific needs
 
-## 📊 Performance
-
-Compared to traditional Node.js CLI tools:
-
-- **28x faster startup** (6ms vs 170ms)
-- **Lower memory footprint** (8-15% less RAM)
-- **Native TypeScript execution** (no compilation step)
-- **Concurrent operations** support
-
-## 🛠️ Development
-
-### Project Structure
+## Architecture
 
 ```
 prompt-improver-cli/
 ├── src/
-│   └── cli.ts          # Main CLI application
-├── dist/               # Built binaries (created by build)
-├── package.json        # Project configuration
-├── tsconfig.json       # TypeScript configuration
-├── .gitignore         # Git ignore rules
-└── README.md          # This file
+│   ├── cli.ts           # Main CLI application and analysis engine
+│   └── interactive.ts   # Claude CLI-driven interactive mode
+├── dist/                # Built binaries (created by build)
+├── package.json         # Project configuration
+├── tsconfig.json        # TypeScript configuration
+└── README.md           # This file
 ```
+
+## Development
 
 ### Development Commands
 
 ```bash
 # Run in development mode
-bun run dev "test prompt"
+bun run dev
 
 # Build standalone binary
 bun run build
@@ -138,13 +142,13 @@ bun test
 5. Push to the branch (`git push origin feature/amazing-feature`)
 6. Open a Pull Request
 
-## 📋 Requirements
+## Requirements
 
 - **Bun** >= 1.0.0
 - **Claude CLI** configured with API access
 - **System clipboard** support (xclip on Linux, pbcopy on macOS, clip on Windows)
 
-## 🔧 Configuration
+## Configuration
 
 The tool uses Claude CLI's existing configuration. Ensure Claude CLI is properly set up:
 
@@ -156,62 +160,47 @@ claude "Hello, Claude!"
 claude configure
 ```
 
-## 📖 Examples
+## Example Session
 
-### Before and After
-
-**Input:**
+**Input Prompt:**
 ```
-make a dashboard with lots of features
+make a news app in the terminal
 ```
 
-**Output:**
-```xml
-<role>You are a senior full-stack developer specializing in dashboard creation</role>
+**Interactive Analysis:**
+1. Claude identifies extreme vagueness and lack of technical context
+2. Generates targeted questions about news sources, display format, and functionality
+3. Creates enhanced prompt based on your responses
+4. Produces final optimized prompt with clear structure and requirements
 
-<context>
-<project_type>Interactive web dashboard</project_type>
-<target_users>Business analysts and decision makers</target_users>
-<constraints>Modern web technologies, responsive design, real-time data</constraints>
-</context>
+**Result:** A comprehensive, well-structured prompt with specific requirements, technical constraints, and success criteria.
 
-<task>
-Create a comprehensive analytics dashboard incorporating:
-- Real-time data visualization with 5-second refresh intervals
-- User-configurable widget layouts supporting drag-and-drop
-- Export capabilities for PDF, CSV, and PNG formats
-- Responsive design breakpoints at 768px and 1024px
-</task>
-
-<!-- Additional structured content -->
-```
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
 **"Claude CLI not found"**
-- Install Claude CLI: `pip install claude-cli` or check installation docs
-- Verify it's in PATH: `which claude`
+- Install Claude CLI following the official documentation
+- Verify it's accessible: `which claude`
 
-**"Can't open display"**
-- Install clipboard utility: `sudo apt install xclip` (Linux)
-- On headless systems, clipboard copying will fail gracefully
+**Interactive session hangs**
+- Ensure Claude CLI is properly configured
+- Check your API access and authentication
 
 **Permission denied**
 - Make script executable: `chmod +x src/cli.ts`
-- Check Bun installation: `bun --version`
+- Verify Bun installation: `bun --version`
 
-## 📄 License
+**Clipboard issues**
+- Linux: Install `sudo apt install xclip`
+- The tool gracefully handles clipboard failures
+
+## License
 
 MIT License - see LICENSE file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Anthropic](https://anthropic.com) for Claude and Claude CLI
-- [Bun](https://bun.sh) for the amazing runtime
-- Prompt engineering best practices from the community
-
----
-
-**Made with ❤️ and Bun**
+- [Bun](https://bun.sh) for the runtime
+- Prompt engineering research community
