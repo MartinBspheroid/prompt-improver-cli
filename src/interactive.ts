@@ -583,7 +583,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
         return false;
     }
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

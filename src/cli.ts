@@ -7,6 +7,10 @@
 import { $ } from "bun";
 import { Command } from 'commander';
 import { runClaudeInteractiveImprovement } from "./interactive.js";
+import { getConfig, validateConfig, type ImprovementConfig, type ImprovementMode } from "./config.js";
+import { selfRefinePrompt, displayRefinementResults } from "./self-refine.js";
+import { createHybridAnalysis, displayDynamicAnalysis, displayHybridAnalysis } from "./dynamic-analysis.js";
+import { ProgressiveEnhancer, displayProgressiveResults } from "./progressive-enhancer.js";
 
 export interface PromptAnalysis {
   issues: string[];
@@ -96,7 +100,7 @@ function detectTaskType(prompt: string): TaskType {
 /**
  * Calculate quality scores for a prompt based on 2024 research metrics
  */
-function calculateQualityScores(prompt: string, taskType: TaskType): QualityScores {
+function calculateQualityScores(prompt: string, _taskType: TaskType): QualityScores {
   const wordCount = prompt.split(/\s+/).length;
   const sentenceCount = prompt.split(/[.!?]+/).length;
   
@@ -376,7 +380,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
         return false;
     }
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -623,15 +627,31 @@ async function runClaudeImprovement(prompt: string, analysis: PromptAnalysis): P
 /**
  * Standard prompt improvement function (non-interactive)
  */
-async function improvePrompt(promptText: string): Promise<void> {
+async function improvePrompt(promptText: string, config: ImprovementConfig = getConfig()): Promise<void> {
   try {
-    console.log("🚀 Analyzing and improving your prompt with 2024 research-based techniques...");
+    console.log(`🚀 Analyzing and improving your prompt with ${config.mode} mode...`);
+    
+    if (config.showProgress) {
+      console.log(`📊 Configuration: Quality Target: ${config.targetQuality}/10, Max Iterations: ${config.maxIterations}, Claude Calls: ${config.maxClaudeCalls}`);
+    }
     
     // Enhanced analysis
-    const analysis = analyzePrompt(promptText);
+    const staticAnalysis = analyzePrompt(promptText);
+    
+    // Run dynamic analysis if enabled
+    let hybridAnalysis = null;
+    if (config.features.dynamicAnalysis) {
+      console.log("🧠 Running dynamic analysis...");
+      hybridAnalysis = await createHybridAnalysis(promptText, staticAnalysis);
+      displayDynamicAnalysis(hybridAnalysis.dynamic, config.showProgress);
+      displayHybridAnalysis(hybridAnalysis, config.showProgress);
+    }
+    
+    // Use hybrid analysis if available, otherwise fall back to static
+    const analysis = hybridAnalysis ? hybridAnalysis.static : staticAnalysis;
     
     // Display comprehensive analysis
-    console.log("📊 Comprehensive Prompt Analysis");
+    console.log("\n📊 Comprehensive Prompt Analysis");
     console.log("================================");
     
     console.log(`🎯 Task Type: ${analysis.taskType}`);
@@ -677,14 +697,54 @@ async function improvePrompt(promptText: string): Promise<void> {
       });
     }
     
-    // Run Claude improvement
-    console.log("🧠 Running Claude CLI with optimized improvement prompt...");
-    const improvedResult = await runClaudeImprovement(promptText, analysis);
+    let finalResult: string;
     
-    console.log(improvedResult);
+    // Choose enhancement strategy based on mode and features
+    if (config.mode === 'thorough' && config.features.multiStageRefinement) {
+      // Use progressive enhancement for thorough mode
+      console.log("🏗️ Running progressive enhancement pipeline...");
+      
+      const enhancer = new ProgressiveEnhancer();
+      const enhancementResult = await enhancer.enhance(
+        promptText, 
+        staticAnalysis,
+        hybridAnalysis?.dynamic,
+        config
+      );
+      
+      displayProgressiveResults(enhancementResult, config.showProgress);
+      finalResult = enhancementResult.finalPrompt;
+      
+      if (config.showProgress) {
+        console.log(`\n🎯 Enhancement Complete: ${enhancementResult.overallImprovement.toFixed(1)}x improvement`);
+      }
+      
+    } else if (config.enableSelfRefine && config.mode !== 'fast') {
+      // Use self-refine loop for balanced mode and research mode
+      console.log("🔄 Running self-refine loop for iterative improvement...");
+      
+      const refineResult = await selfRefinePrompt(promptText, config);
+      displayRefinementResults(refineResult, config.showProgress);
+      
+      finalResult = refineResult.finalPrompt;
+      
+      if (config.showProgress) {
+        console.log(`\n🎯 Final Quality Score: ${refineResult.finalQuality.toFixed(1)}/10 (target: ${config.targetQuality})`);
+      }
+    } else {
+      // Standard single-pass improvement for fast mode
+      console.log("🧠 Running single-pass Claude improvement...");
+      finalResult = await runClaudeImprovement(promptText, analysis);
+    }
+    
+    console.log('\n' + '='.repeat(50));
+    console.log('🎯 FINAL IMPROVED PROMPT');
+    console.log('='.repeat(50));
+    console.log(finalResult);
+    console.log('='.repeat(50));
     
     // Try to copy to clipboard
-    const clipboardSuccess = await copyToClipboard(improvedResult);
+    const clipboardSuccess = await copyToClipboard(finalResult);
     if (clipboardSuccess) {
       console.log("✅ Result copied to clipboard!");
     } else {
@@ -712,9 +772,22 @@ async function main(): Promise<void> {
   program
     .command('analyze')
     .alias('a')
-    .description('Run standard prompt analysis and improvement (non-interactive)')
+    .description('Run advanced prompt analysis and improvement with configurable modes')
     .argument('[prompt]', 'Prompt text to improve')
-    .action(async (promptText?: string) => {
+    .option('-m, --mode <mode>', 'Improvement mode: fast, balanced, thorough, research', 'balanced')
+    .option('-t, --target-quality <score>', 'Target quality score (0-10)', '8.5')
+    .option('--max-iterations <n>', 'Maximum refinement iterations', '3')
+    .option('--max-claude-calls <n>', 'Maximum Claude API calls', '5')
+    .option('--no-self-refine', 'Disable self-refine loop')
+    .option('-p, --show-progress', 'Show detailed progress', false)
+    .action(async (promptText?: string, options?: {
+      mode?: string;
+      targetQuality?: string;
+      maxIterations?: string;
+      maxClaudeCalls?: string;
+      selfRefine?: boolean;
+      showProgress?: boolean;
+    }) => {
       let prompt = "";
       
       if (promptText) {
@@ -730,7 +803,7 @@ async function main(): Promise<void> {
             program.help();
             process.exit(1);
           }
-        } catch (error) {
+        } catch {
           program.help();
           process.exit(1);
         }
@@ -742,7 +815,38 @@ async function main(): Promise<void> {
         process.exit(1);
       }
 
-      await improvePrompt(prompt);
+      // Parse and validate configuration options
+      const mode = (options?.mode || 'balanced') as ImprovementMode;
+      if (!['fast', 'balanced', 'thorough', 'research'].includes(mode)) {
+        console.error(`Error: Invalid mode '${mode}'. Must be one of: fast, balanced, thorough, research`);
+        process.exit(1);
+      }
+
+      const configOverrides: Partial<ImprovementConfig> = {
+        mode,
+        targetQuality: parseFloat(options?.targetQuality || '8.5'),
+        maxIterations: parseInt(options?.maxIterations || '3'),
+        maxClaudeCalls: parseInt(options?.maxClaudeCalls || '5'),
+        enableSelfRefine: options?.selfRefine !== false,
+        showProgress: options?.showProgress || false
+      };
+
+      // Validate configuration
+      const validationErrors = validateConfig(configOverrides);
+      if (validationErrors.length > 0) {
+        console.error("Configuration errors:");
+        validationErrors.forEach(error => console.error(`  - ${error}`));
+        process.exit(1);
+      }
+
+      // Get configuration with overrides
+      const config = getConfig(mode, configOverrides);
+      
+      if (config.showProgress) {
+        console.log(`🎯 Mode: ${mode} | Target Quality: ${config.targetQuality}/10 | Max Iterations: ${config.maxIterations}`);
+      }
+
+      await improvePrompt(prompt, config);
     });
 
   // File input command
@@ -794,7 +898,6 @@ async function main(): Promise<void> {
       }
       
       // Check if there's piped input (stdin) without blocking
-      let hasStdinInput = false;
       if (!process.stdin.isTTY) {
         // There's piped input available
         try {
@@ -803,7 +906,7 @@ async function main(): Promise<void> {
             await improvePrompt(stdin.trim());
             return;
           }
-        } catch (error) {
+        } catch {
           // Continue to interactive mode if stdin read fails
         }
       }
@@ -824,6 +927,39 @@ async function main(): Promise<void> {
         }
         console.error("Interactive mode failed:", error instanceof Error ? error.message : "Unknown error");
         process.exit(1);
+      }
+    });
+
+  // Basic test command
+  program
+    .command('test')
+    .description('Run basic quality tests on prompt improvements')
+    .option('--sample', 'Run sample tests with different prompts', false)
+    .action(async (options?: { sample?: boolean }) => {
+      if (options?.sample) {
+        console.log('🧪 Running sample prompt improvement tests...\n');
+        
+        const testPrompts = [
+          'write code',
+          'analyze data', 
+          'create content',
+          'help me'
+        ];
+        
+        for (const prompt of testPrompts) {
+          console.log(`\n🔍 Testing: "${prompt}"`);
+          console.log('='.repeat(40));
+          const config = getConfig('fast', { showProgress: false });
+          await improvePrompt(prompt, config);
+        }
+        
+        console.log('\n✅ Sample tests completed!');
+      } else {
+        console.log('🧪 Available test options:');
+        console.log('  --sample    Run sample improvement tests with different prompts');
+        console.log('\n💡 For advanced testing features (LLM evaluation, A/B testing), see the tada/ folder:');
+        console.log('  - tada/testing.md - Testing framework documentation');
+        console.log('  - tada/setup-local-testing.sh - Local LLM setup for testing');
       }
     });
 
