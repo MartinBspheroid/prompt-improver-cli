@@ -12,7 +12,12 @@
     "build": "bun build --compile --outfile dist/prompt-improver ./src/cli.ts",
     "install-global": "bun build --compile --outfile /usr/local/bin/prompt-improver ./src/cli.ts",
     "test": "bun test",
-    "lint": "bun run --bun tsc --noEmit"
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "lint:watch": "oxlint --watch",
+    "typecheck": "bun run --bun tsc --noEmit",
+    "check": "bun run typecheck && bun run lint",
+    "format": "bun run lint:fix"
   },
   "keywords": [
     "cli",
@@ -37,6 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "oxlint": "^1.9.0",
     "typescript": "^5.0.0"
   },
   "repository": {

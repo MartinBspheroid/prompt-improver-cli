@@ -1,0 +1,39 @@
+{
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-unused-vars": "warn",  
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/prefer-optional-chain": "warn",
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "unicorn/prefer-node-protocol": "warn",
+    "unicorn/no-array-for-each": "off",
+    "oxc/no-const-enum": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{ts,tsx}"],
+      "plugins": ["typescript"],
+      "rules": {
+        "typescript/no-explicit-any": "warn",
+        "typescript/prefer-as-const": "warn"
+      }
+    },
+    {
+      "files": ["**/*.test.{ts,js}", "**/*.spec.{ts,js}", "**/test/**/*"],
+      "rules": {
+        "no-console": "off",
+        "typescript/no-explicit-any": "off"
+      }
+    }
+  ],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "globals": {
+    "Bun": "readonly",
+    "$": "readonly"
+  }
+}
